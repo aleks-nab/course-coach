@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course Coach</title>
+<style>
+:root{
+  --bg:#ffffff;--ink:#1f2933;--muted:#6b7683;--line:#e8ebef;--soft:#f6f8fa;
+  --accent:#3b6fd4;--accent-bg:#eaf0fc;
+  --active:#2a8564;--active-bg:#e6f5ee;
+  --shelf:#546274;--shelf-bg:#eef1f5;
+  --event:#7650c2;--event-bg:#f0eafb;
+  --done:#9a6f0a;--done-bg:#fbf3dc;
+  --red:#e0626a;--amber:#e2a032;--green:#4fa77f;
+  --radius:18px;--shadow:0 1px 2px rgba(31,41,51,.05),0 6px 20px rgba(31,41,51,.06);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding-bottom:84px}
+h1,h2,h3,h4{margin:0;line-height:1.25}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--accent)}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header.top{padding:22px 0 10px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+header.top h1{font-size:26px;letter-spacing:-.01em}
+header.top .date{color:var(--muted);font-size:14px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:flex;justify-content:center;gap:4px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));z-index:20}
+nav.tabs button{flex:1;max-width:200px;border:0;background:none;padding:8px 6px;border-radius:12px;color:var(--muted);font-weight:600;font-size:14px;cursor:pointer}
+nav.tabs button[aria-current="page"]{background:var(--accent-bg);color:var(--accent)}
+nav.tabs .ic{display:block;font-size:18px;line-height:1.1}
+@media(min-width:760px){
+  nav.tabs{position:static;border:0;background:none;padding:0;justify-content:flex-start;margin-bottom:6px}
+  nav.tabs button{flex:none;display:inline-flex;align-items:center;gap:8px;padding:9px 16px;font-size:15px}
+  nav.tabs .ic{display:inline;font-size:15px}
+  body{padding-bottom:40px}
+  nav.tabs-wrap{border-bottom:1px solid var(--line);margin-bottom:18px}
+}
+.grid{display:grid;gap:16px}
+@media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr}.grid.main{grid-template-columns:1.5fr 1fr}.grid.four{grid-template-columns:repeat(4,1fr)}}
+.grid.four{grid-template-columns:repeat(2,1fr)}
+@media(min-width:760px){.grid.four{grid-template-columns:repeat(4,1fr)}}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.card.big{padding:22px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:8px}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.sec{margin:26px 0 10px;font-size:18px}
+.sec-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:26px 0 10px}
+.sec-row .sec{margin:0}
+.btn{border:1px solid var(--line);background:#fff;border-radius:12px;padding:9px 14px;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--soft)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{filter:brightness(.95)}
+.btn.danger{color:#b4414a;border-color:#f0cfd2}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:10px}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:700;border-radius:999px;padding:3px 10px;white-space:nowrap}
+.st-active .badge.st,.badge.st-active{background:var(--active-bg);color:var(--active)}
+.st-shelf .badge.st,.badge.st-shelf{background:var(--shelf-bg);color:var(--shelf)}
+.st-event .badge.st,.badge.st-event{background:var(--event-bg);color:var(--event)}
+.st-finished .badge.st,.badge.st-finished{background:var(--done-bg);color:var(--done)}
+.badge.pri-important{background:#fff1d6;color:#8a5a00}
+.badge.pri-low{background:var(--soft);color:var(--muted)}
+.course{border-left:5px solid var(--line)}
+.course.st-active{border-left-color:var(--active)}
+.course.st-shelf{border-left-color:#b9c3d0}
+.course.st-event{border-left-color:var(--event)}
+.course.st-finished{border-left-color:#e0b640}
+.c-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.c-head h3{font-size:18px}
+.org{color:var(--muted);font-size:14px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.info{font-size:14px;color:var(--muted);margin-top:8px}
+.prog{display:flex;gap:16px;align-items:center;margin:14px 0 6px}
+.prog .txt{font-size:14px}
+.fld{display:block;margin-top:12px}
+.fld>span{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+textarea,input[type=text],input[type=url],input[type=number],input[type=date],select{width:100%;border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:#fff}
+textarea{resize:vertical;min-height:44px}
+.fld textarea{background:var(--soft);border-color:transparent}
+.fld textarea:focus{background:#fff;border-color:var(--line)}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.dates div{background:var(--soft);border-radius:12px;padding:9px 12px}
+.dates b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.dates .v{font-weight:600}
+.dates .u{font-size:12px;color:var(--muted)}
+.last{font-size:14px;color:var(--muted);margin-top:12px}
+.note{font-size:14px;background:var(--accent-bg);border-radius:12px;padding:8px 12px;margin-top:12px}
+.ring text{font-family:inherit}
+.suggest h2{font-size:24px;margin:2px 0 4px}
+.suggest .next{background:var(--soft);border-radius:14px;padding:12px 14px;margin:14px 0 0}
+.suggest .next b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.cd{display:flex;gap:16px;align-items:center}
+.list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.list li{display:flex;gap:12px;align-items:flex-start;padding:10px 12px;background:var(--soft);border-radius:12px}
+.list .when{min-width:84px;font-weight:700;font-size:14px}
+.list .sub{font-size:13px;color:var(--muted)}
+.remind{background:#fff8ea;border-color:#f6e4bc}
+.remind p{margin:0 0 8px}
+.stat{text-align:left}
+.stat .n{font-size:30px;font-weight:700;letter-spacing:-.02em}
+.stat .l{font-size:13px;color:var(--muted)}
+.scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-top:8px;align-items:center}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:4px}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);align-items:center}
+.hist li:last-child{border-bottom:0}
+.empty{color:var(--muted);padding:14px;background:var(--soft);border-radius:14px;font-size:14px}
+.slot{border:2px dashed var(--line);border-radius:var(--radius);padding:22px;text-align:center;color:var(--muted)}
+.overlay{position:fixed;inset:0;background:rgba(31,41,51,.4);display:flex;align-items:flex-start;justify-content:center;padding:24px 14px;overflow:auto;z-index:50}
+.modal{background:#fff;border-radius:20px;max-width:520px;width:100%;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.25);margin:auto}
+.modal h2{font-size:20px;margin-bottom:4px}
+.modal .sub{color:var(--muted);font-size:14px;margin:0 0 6px}
+.modal label{display:block;margin-top:12px;font-weight:600;font-size:14px}
+.modal label small{font-weight:400;color:var(--muted)}
+.modal label>*:not(small):not(span){margin-top:4px}
+.modal .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.modal .inl{display:flex;gap:8px;align-items:center}
+.modal .inl select{width:auto}
+.modal .inl input{min-width:0}
+.modal .btns{justify-content:flex-end}
+.err{color:#b4414a;font-size:14px;margin-top:10px;min-height:0}
+.chk{display:flex!important;gap:10px;align-items:center;font-weight:500!important}
+.chk input{width:auto}
+pre.sum{white-space:pre-wrap;background:var(--soft);padding:12px;border-radius:12px;font-size:13px;max-height:260px;overflow:auto}
+.diff li{margin:2px 0}
+.toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#1f2933;color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;max-width:90vw;box-shadow:0 6px 20px rgba(0,0,0,.2)}
+@media(min-width:760px){.toast{bottom:28px}}
+.banner{background:#fff1d6;border:1px solid #f1dba8;border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:12px}
+.confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:20px}
+.confetti i{position:absolute;top:-12px;width:8px;height:14px;border-radius:2px;animation:fall 2.8s linear infinite}
+@keyframes fall{to{transform:translateY(520px) rotate(540deg);opacity:.2}}
+.modal.cel{position:relative;text-align:center}
+.modal.cel .emoji{font-size:44px}
+@media(prefers-reduced-motion:reduce){.confetti i{animation:none;display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Course Coach</h1>
+      <div class="date" id="todayLabel"></div>
+    </div>
+    <button class="btn primary" data-act="copy">Copy summary for Claude</button>
+  </header>
+  <div class="nav-wrap"><nav class="tabs" id="tabs" aria-label="Sections">
+    <button data-tab="today"><span class="ic">&#9788;</span>Today</button>
+    <button data-tab="active"><span class="ic">&#9654;</span>Active</button>
+    <button data-tab="shelf"><span class="ic">&#9636;</span>Shelf</button>
+    <button data-tab="progress"><span class="ic">&#10003;</span>Progress</button>
+  </nav></div>
+  <div id="banner"></div>
+  <main id="view"></main>
+</div>
+<div id="modalRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------- constants ---------- */
+var KEY='courseCoach.v1';
+var MAX_ACTIVE=2;
+var MS=86400000;
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var STATUSES=['active','shelf','event','finished'];
+var ST={active:{label:'Active',icon:'▶'},shelf:{label:'On the shelf',icon:'▤'},event:{label:'Event',icon:'✦'},finished:{label:'Finished',icon:'✓'}};
+var C_RED='#e0626a',C_AMBER='#e2a032',C_GREEN='#4fa77f';
+
+/* ---------- starting data (only what the user gave) ---------- */
+function mk(o){
+  var base={id:'',title:'',org:'',url:null,status:'shelf',priority:null,unit:null,percent:null,done:null,total:null,
+    info:'',stopped:'',next:'',hardDeadline:null,targetDate:null,eventDate:null,registered:null,
+    lastSession:null,note:'',finishedDate:null,certificate:false};
+  for(var k in o){base[k]=o[k];}
+  return base;
+}
+function seedData(){
+  return {
+    version:1,
+    courses:[
+      mk({id:'power-of-where',title:'The Power of Where: Communicating with Maps',org:'Esri MOOC',status:'active',unit:'percent',percent:11,
+        info:'6 sections.',stopped:'Section 1, Exercise 1 "Install ArcGIS Pro" done.',
+        next:'Open project CreateAMap.aprx (London map) and continue section 1.',
+        hardDeadline:'2026-12-09',targetDate:'2026-12-01',lastSession:'2026-11-03',
+        note:'After finishing, add the certificate to LinkedIn.'}),
+      mk({id:'geo-python',title:'Geo-Python',org:'University of Helsinki',url:'https://geo-python.github.io',status:'active',unit:'lessons',total:7,done:null,
+        info:'7 lessons. Self-paced, about one lesson per week. No hard deadline.',next:'Next lesson.',
+        targetDate:'2026-11-15',lastSession:'2026-10-29'}),
+      mk({id:'digital-twin-technology',title:'Digital Twin Technology',org:'digitaltwinproject.eu',url:'https://mooc.digitaltwinproject.eu/course/view.php?id=44',
+        priority:'important',next:'List the course sections and plan them by week.',targetDate:'2026-12-14'}),
+      mk({id:'gis-land-administration',title:'GIS for Land Administration',org:'University of Twente (Zenodo, QGIS)',
+        next:'Open module 1.',targetDate:'2026-12-13'}),
+      mk({id:'smart-cities',title:'Smart Cities: Management of Smart Urban Infrastructures',org:'EPFL (Coursera)',url:'https://www.coursera.org/learn/smart-cities',
+        info:'5 modules, about 14 h.',next:'Enroll in free Audit mode, open module 1.',targetDate:'2026-12-31'}),
+      mk({id:'digital-twins-eucedic',title:'Digital Twins: the coming future for infrastructure and cities',org:'EUCEDIC, UPM',
+        url:'https://digital-skills-jobs.europa.eu/en/learning-space/training-catalogue/digital-twins-coming-future-infrastructure-and-cities',
+        priority:'important',info:'About 50 h. Not enrolled.',next:'Enroll and open module 1.',targetDate:'2027-01-11'}),
+      mk({id:'green-infrastructure',title:'Green infrastructure short courses',org:'Surrey / RECLAIM',url:'https://reclaim-network.org/cpdcourses',
+        priority:'low',info:'7 short courses, I take 1 or 2.',next:'Choose 1 or 2.',targetDate:'2027-01-25'}),
+      mk({id:'going-places',title:'Going Places with Spatial Analysis',org:'Esri MOOC',
+        info:'Opens 27 Jan 2027. The hard deadline is for registration.',next:'Register.',hardDeadline:'2027-02-10'}),
+      mk({id:'nature-based-solutions',title:'Nature-based Solutions',org:'UCLG / NetworkNature',url:'https://learningwith.uclg.org/courses/2096099',
+        priority:'low',info:'7 modules.',next:'Enroll in February 2027.'}),
+      mk({id:'survey123-seminar',title:'ArcGIS Survey123: Meet the Modern Apps',org:'Esri live seminar',status:'event',
+        eventDate:'2026-11-19',registered:false,info:'Online, about 1 h.',next:'Register and check the time in Tallinn.'})
+    ],
+    sessions:[
+      {id:'s-seed-1',courseId:'power-of-where',title:'The Power of Where: Communicating with Maps',date:'2026-11-03',minutes:null},
+      {id:'s-seed-2',courseId:'geo-python',title:'Geo-Python',date:'2026-10-29',minutes:null}
+    ]
+  };
+}
+
+/* ---------- dates ---------- */
+function pad(n){return (n<10?'0':'')+n;}
+function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function parseD(s){
+  if(typeof s!=='string')return null;
+  var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if(!m)return null;
+  var d=new Date(+m[1],+m[2]-1,+m[3]);
+  return iso(d)===s?d:null;
+}
+function today(){var n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());}
+function diff(a,b){return Math.round((a-b)/MS);}
+function addDays(d,n){return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);}
+function fmt(x){
+  var d=typeof x==='string'?parseD(x):x;
+  return d?d.getDate()+' '+MON[d.getMonth()]+' '+d.getFullYear():'not set';
+}
+function daysUntil(s){var d=parseD(s);return d?diff(d,today()):null;}
+function daysSince(s){var d=parseD(s);return d?diff(today(),d):null;}
+function ago(s){
+  var n=daysSince(s);
+  if(n===null)return 'not set';
+  if(n<=0)return 'today';
+  if(n===1)return '1 day ago';
+  return n+' days ago';
+}
+function inDays(n){
+  if(n<0)return Math.abs(n)+(Math.abs(n)===1?' day ago':' days ago');
+  if(n===0)return 'today';
+  if(n===1)return 'tomorrow';
+  return 'in '+n+' days';
+}
+function urgencyColor(n){return n<14?C_RED:(n<30?C_AMBER:C_GREEN);}
+
+/* ---------- helpers ---------- */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
+function uid(p){return p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function safeUrl(u){
+  if(typeof u!=='string')return null;
+  u=u.trim();
+  return /^https?:\/\/[^\s]+$/i.test(u)?u:null;
+}
+function deepCopy(o){return JSON.parse(JSON.stringify(o));}
+
+/* ---------- validation of data (used for load and import) ---------- */
+function normalize(d){
+  var errors=[];
+  if(!d||typeof d!=='object'||!Array.isArray(d.courses)){
+    return {ok:false,errors:['The data must be an object with a "courses" list.']};
+  }
+  var seen={},courses=[],sessions=[];
+  function str(v){return (typeof v==='string')?v.trim():'';}
+  function dt(v,label){
+    if(v===null||v===undefined||v==='')return null;
+    if(parseD(v))return v;
+    errors.push(label+': "'+v+'" is not a date in the form YYYY-MM-DD.');
+    return null;
+  }
+  function nm(v,label){
+    if(v===null||v===undefined||v==='')return null;
+    var n=Number(v);
+    if(!isFinite(n)||n<0){errors.push(label+': "'+v+'" is not a valid number.');return null;}
+    return n;
+  }
+  d.courses.forEach(function(r,i){
+    var tag='Course #'+(i+1);
+    if(!r||typeof r!=='object'){errors.push(tag+' is not an object.');return;}
+    var title=str(r.title);
+    if(!title){errors.push(tag+' has no title.');return;}
+    tag=title;
+    if(STATUSES.indexOf(r.status)<0){errors.push(tag+': status must be active, shelf, event or finished.');return;}
+    var id=str(r.id)||('c-'+i+'-'+Date.now().toString(36));
+    if(seen[id]){errors.push(tag+': the id "'+id+'" is used twice.');return;}
+    seen[id]=1;
+    var unit=(r.unit==='percent'||r.unit==='lessons')?r.unit:null;
+    var pr=(r.priority==='important'||r.priority==='low')?r.priority:null;
+    var c=mk({id:id,title:title,org:str(r.org),url:safeUrl(r.url),status:r.status,priority:pr,unit:unit,
+      percent:nm(r.percent,tag+' percent'),done:nm(r.done,tag+' done'),total:nm(r.total,tag+' total'),
+      info:str(r.info),stopped:str(r.stopped),next:str(r.next),
+      hardDeadline:dt(r.hardDeadline,tag+' hardDeadline'),targetDate:dt(r.targetDate,tag+' targetDate'),
+      eventDate:dt(r.eventDate,tag+' eventDate'),
+      registered:(r.registered===true||r.registered===false)?r.registered:null,
+      lastSession:dt(r.lastSession,tag+' lastSession'),note:str(r.note),
+      finishedDate:dt(r.finishedDate,tag+' finishedDate'),certificate:r.certificate===true});
+    if(c.percent!==null&&c.percent>100){errors.push(tag+': percent is more than 100.');}
+    courses.push(c);
+  });
+  var activeN=courses.filter(function(c){return c.status==='active';}).length;
+  if(activeN>MAX_ACTIVE){errors.push('There are '+activeN+' active courses, but at most '+MAX_ACTIVE+' are allowed. Please put the extra ones on the shelf.');}
+  (Array.isArray(d.sessions)?d.sessions:[]).forEach(function(s,i){
+    var tag='Session #'+(i+1);
+    if(!s||typeof s!=='object'){errors.push(tag+' is not an object.');return;}
+    if(!parseD(s.date)){errors.push(tag+': date must be YYYY-MM-DD.');return;}
+    var m=nm(s.minutes,tag+' minutes');
+    sessions.push({id:str(s.id)||('s-'+i+'-'+Date.now().toString(36)),courseId:str(s.courseId),title:str(s.title),date:s.date,minutes:m?m:null});
+  });
+  if(errors.length)return {ok:false,errors:errors};
+  return {ok:true,data:{version:1,courses:courses,sessions:sessions}};
+}
+
+/* ---------- storage ---------- */
+var memoryOnly=false;
+var S=load();
+function load(){
+  try{
+    var raw=localStorage.getItem(KEY);
+    if(raw===null){
+      var s=seedData();
+      localStorage.setItem(KEY,JSON.stringify(s));
+      return s;
+    }
+    var n=normalize(JSON.parse(raw));
+    if(n.ok)return n.data;
+    try{localStorage.setItem(KEY+'.broken',raw);}catch(e){}
+    return seedData();
+  }catch(e){
+    memoryOnly=true;
+    return seedData();
+  }
+}
+function save(){
+  try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){memoryOnly=true;renderBanner();}
+}
+function renderBanner(){
+  document.getElementById('banner').innerHTML=memoryOnly?'<div class="banner">Your browser is not letting me save data here, so changes will be lost when you close this page. Please use "Export data (JSON)" to keep a copy.</div>':'';
+}
+
+/* ---------- course helpers ---------- */
+function get(id){for(var i=0;i<S.courses.length;i++){if(S.courses[i].id===id)return S.courses[i];}return null;}
+function byStatus(st){return S.courses.filter(function(c){return c.status===st;});}
+function pct(c){
+  if(c.unit==='percent')return c.percent===null?null:clamp(c.percent,0,100);
+  if(c.unit==='lessons'){if(c.done===null||!c.total)return null;return clamp(c.done/c.total*100,0,100);}
+  return null;
+}
+function progLabel(c){
+  if(c.unit==='percent')return c.percent===null?'not set':(Math.round(c.percent)+'%');
+  if(c.unit==='lessons'){
+    if(c.done===null)return c.total?('not set (of '+c.total+' lessons)'):'not set';
+    return c.done+' of '+(c.total||'?')+' lessons';
+  }
+  return 'not set';
+}
+function courseTitle(s){var c=get(s.courseId);return c?c.title:(s.title||'Deleted course');}
+function nearestHard(){
+  var best=null;
+  S.courses.forEach(function(c){
+    if(c.status==='finished'||c.status==='event'||!c.hardDeadline)return;
+    var n=daysUntil(c.hardDeadline);
+    if(n===null)return;
+    if(best===null||n<best.n)best={c:c,n:n};
+  });
+  return best;
+}
+function suggestion(){
+  var act=byStatus('active');
+  if(!act.length)return null;
+  var withHard=act.filter(function(c){return c.hardDeadline;}).sort(function(a,b){return a.hardDeadline<b.hardDeadline?-1:1;});
+  if(withHard.length)return {c:withHard[0],why:'It has the closest hard deadline among your active courses: '+fmt(withHard[0].hardDeadline)+'.'};
+  var sorted=act.slice().sort(function(a,b){
+    var x=a.lastSession||'0000-00-00',y=b.lastSession||'0000-00-00';
+    return x<y?-1:(x>y?1:0);
+  });
+  var c=sorted[0];
+  return {c:c,why:c.lastSession?'You have not been back to it for the longest time ('+ago(c.lastSession)+').':'No session is logged for it yet.'};
+}
+function sessionsBetween(a,b){
+  var sa=iso(a),sb=iso(b);
+  return S.sessions.filter(function(s){return s.date>=sa&&s.date<=sb;});
+}
+function mondayOf(d){return addDays(d,-((d.getDay()+6)%7));}
+
+/* ---------- small SVG pieces ---------- */
+function ring(p,size,color,big,small,label){
+  var r=size/2-8,C=2*Math.PI*r,cx=size/2,cy=size/2;
+  var off=p===null?C:C*(1-p/100);
+  var s='<svg class="ring" width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" role="img" aria-label="'+esc(label)+'">';
+  s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="#eef1f5" stroke-width="9"/>';
+  if(p!==null&&p>0){
+    s+='<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="9" stroke-linecap="round" stroke-dasharray="'+C.toFixed(2)+'" stroke-dashoffset="'+off.toFixed(2)+'" transform="rotate(-90 '+cx+' '+cy+')"/>';
+  }
+  if(big){
+    s+='<text x="'+cx+'" y="'+(small?cy+2:cy+7)+'" text-anchor="middle" font-size="'+(size>100?30:20)+'" font-weight="700" fill="#1f2933">'+esc(big)+'</text>';
+    if(small)s+='<text x="'+cx+'" y="'+(cy+(size>100?22:16))+'" text-anchor="middle" font-size="'+(size>100?12:10)+'" fill="#6b7683">'+esc(small)+'</text>';
+  }
+  return s+'</svg>';
+}
+
+/* ---------- course card ---------- */
+function statusBadge(c){var s=ST[c.status];return '<span class="badge st">'+s.icon+' '+s.label+'</span>';}
+function dateBox(label,val){
+  var n=val?daysUntil(val):null;
+  return '<div><b>'+label+'</b><span class="v">'+(val?fmt(val):'not set')+'</span>'+(val&&n!==null?'<div class="u">'+inDays(n)+'</div>':'')+'</div>';
+}
+function cardHTML(c){
+  var h='<article class="card course st-'+c.status+'" data-id="'+esc(c.id)+'">';
+  h+='<div class="c-head"><div><h3>'+esc(c.title)+'</h3><div class="org">'+(c.org?esc(c.org):'organization: not set')+'</div></div>'+statusBadge(c)+'</div>';
+  var tags='';
+  if(c.priority==='important')tags+='<span class="badge pri-important">Important</span>';
+  if(c.priority==='low')tags+='<span class="badge pri-low">Low priority</span>';
+  if(c.certificate)tags+='<span class="badge st-finished">Certificate earned</span>';
+  if(tags)h+='<div class="tags">'+tags+'</div>';
+  if(c.info)h+='<div class="info">'+esc(c.info)+'</div>';
+  var link=safeUrl(c.url);
+  h+='<div class="info">'+(link?'<a href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">Open course</a>':'Course link: not set')+'</div>';
+  if(c.status==='event'){
+    h+='<div class="dates">'+dateBox('Event date',c.eventDate)+'<div><b>Registered</b><span class="v">'+(c.registered===true?'Yes':(c.registered===false?'No, not yet':'not set'))+'</span></div></div>';
+    h+='<label class="fld"><span>Next small step</span><textarea rows="2" data-field="next" data-id="'+esc(c.id)+'" placeholder="not set">'+esc(c.next)+'</textarea></label>';
+    h+='<div class="btns"><button class="btn" data-act="reg" data-id="'+esc(c.id)+'">'+(c.registered===true?'Mark as not registered':'Mark as registered')+'</button>'
+      +'<button class="btn" data-act="finish" data-id="'+esc(c.id)+'">Mark as done</button>'
+      +'<button class="btn" data-act="edit" data-id="'+esc(c.id)+'">Edit</button>'
+      +'<button class="btn danger" data-act="delete" data-id="'+esc(c.id)+'">Delete</button></div>';
+    return h+'</article>';
+  }
+  var p=pct(c);
+  var color=c.status==='finished'?'#d9a62b':'#2a8564';
+  h+='<div class="prog">'+ring(p,84,color,p!==null?Math.round(p)+'%':'',p===null?'not set':'','Progress: '+progLabel(c))
+    +'<div class="txt"><b>Progress</b><br>'+esc(progLabel(c))+'</div></div>';
+  h+='<label class="fld"><span>Where I stopped</span><textarea rows="2" data-field="stopped" data-id="'+esc(c.id)+'" placeholder="not set">'+esc(c.stopped)+'</textarea></label>';
+  h+='<label class="fld"><span>Next small step</span><textarea rows="2" data-field="next" data-id="'+esc(c.id)+'" placeholder="not set">'+esc(c.next)+'</textarea></label>';
+  h+='<div class="dates">'+dateBox('Hard deadline',c.hardDeadline)+dateBox('My target date',c.targetDate)+'</div>';
+  h+='<div class="last">Last session: '+esc(ago(c.lastSession))+(c.lastSession?' ('+fmt(c.lastSession)+')':'')+'</div>';
+  if(c.finishedDate)h+='<div class="last">Finished on '+fmt(c.finishedDate)+'</div>';
+  if(c.note)h+='<div class="note">'+esc(c.note)+'</div>';
+  var id=esc(c.id),b='<div class="btns">';
+  if(c.status!=='finished')b+='<button class="btn primary" data-act="log" data-id="'+id+'">Log a session</button>';
+  if(c.status==='active')b+='<button class="btn" data-act="shelve" data-id="'+id+'">Put on the shelf</button>';
+  if(c.status==='shelf')b+='<button class="btn" data-act="activate" data-id="'+id+'">Make active</button>';
+  if(c.status==='finished')b+='<button class="btn" data-act="reopen" data-id="'+id+'">Move back to the shelf</button>';
+  if(c.status!=='finished')b+='<button class="btn" data-act="finish" data-id="'+id+'">Mark as finished</button>';
+  b+='<button class="btn" data-act="edit" data-id="'+id+'">Edit</button><button class="btn danger" data-act="delete" data-id="'+id+'">Delete</button></div>';
+  return h+b+'</article>';
+}
+
+/* ---------- views ---------- */
+var tab='today';
+
+function viewToday(){
+  var h='';
+  var sg=suggestion();
+  var hard=nearestHard();
+  h+='<div class="grid main">';
+  // suggested
+  h+='<section class="card big suggest"><div class="eyebrow">Suggested for today</div>';
+  if(sg){
+    var c=sg.c,link=safeUrl(c.url);
+    h+='<h2>'+esc(c.title)+'</h2><div class="org">'+esc(c.org||'organization: not set')+'</div>';
+    h+='<div class="info">'+esc(sg.why)+'</div>';
+    h+='<div class="next"><b>Next small step</b>'+(c.next?esc(c.next):'not set')+'</div>';
+    h+='<div class="btns"><button class="btn primary" data-act="log" data-id="'+esc(c.id)+'">Log a session</button>'
+      +(link?'<a class="btn" href="'+esc(link)+'" target="_blank" rel="noopener noreferrer">Open course</a>':'')+'</div>';
+    h+='<p class="small muted" style="margin:14px 0 0">This is only a suggestion. You decide what feels right today.</p>';
+  }else{
+    h+='<h2>No active courses yet</h2><p class="muted">Pick one or two from the shelf when you feel ready. There is no rush.</p><div class="btns"><button class="btn primary" data-goto="shelf">Open the shelf</button></div>';
+  }
+  h+='</section>';
+  // countdown
+  h+='<section class="card big"><div class="eyebrow">Next hard deadline</div>';
+  if(hard){
+    var n=hard.n,col=urgencyColor(n),frac=n<=0?0:clamp(n,0,60)/60*100;
+    h+='<div class="cd">'+ring(n<0?0:frac,128,col,n<0?'0':String(n),n===1?'day left':'days left','Days left: '+n)
+      +'<div><b>'+esc(hard.c.title)+'</b><div class="muted">'+fmt(hard.c.hardDeadline)+'</div>'
+      +(n<0?'<div class="small muted" style="margin-top:6px">This date passed '+Math.abs(n)+' days ago. It is okay to look at it calmly and re-plan.</div>':'')
+      +'<div class="small muted" style="margin-top:6px">The ring shows up to 60 days.</div></div></div>';
+  }else{
+    h+='<div class="cd">'+ring(null,128,'#ccc','','not set','No hard deadline set')+'<div class="muted">No hard deadlines set.</div></div>';
+  }
+  h+='</section></div>';
+  // reminders
+  var rem=byStatus('active').filter(function(c){
+    var d=daysSince(c.lastSession);
+    return c.lastSession?d>=5:false;
+  });
+  var fresh=byStatus('active').filter(function(c){return !c.lastSession;});
+  if(rem.length||fresh.length){
+    h+='<section class="card remind" style="margin-top:16px"><div class="eyebrow">Gentle reminder</div>';
+    rem.forEach(function(c){
+      var d=daysSince(c.lastSession);
+      h+='<p><b>'+esc(c.title)+'</b> is waiting for you for '+d+' days. Next step: '+(c.next?esc(c.next):'not set')+'<br><span class="small muted">No pressure. Even ten minutes counts.</span></p>';
+    });
+    fresh.forEach(function(c){
+      h+='<p><b>'+esc(c.title)+'</b> is ready whenever you are. Next step: '+(c.next?esc(c.next):'not set')+'</p>';
+    });
+    h+='</section>';
+  }
+  // events and coming up
+  var t=today(),lim=addDays(t,30);
+  var ev=S.courses.filter(function(c){
+    if(c.status!=='event'||!c.eventDate)return false;
+    var d=parseD(c.eventDate);return d&&d>=t&&d<=lim;
+  }).sort(function(a,b){return a.eventDate<b.eventDate?-1:1;});
+  var up=S.courses.filter(function(c){
+    if(c.status==='event'||c.status==='finished'||!c.targetDate)return false;
+    var d=parseD(c.targetDate);return d&&d>=t&&d<=lim;
+  }).sort(function(a,b){return a.targetDate<b.targetDate?-1:1;});
+  h+='<div class="grid two" style="margin-top:16px">';
+  h+='<section class="card"><div class="eyebrow">Upcoming events (30 days)</div>';
+  if(ev.length){
+    h+='<ul class="list">';
+    ev.forEach(function(c){
+      h+='<li><div class="when">'+fmt(c.eventDate)+'<div class="sub">'+inDays(daysUntil(c.eventDate))+'</div></div><div><b>'+esc(c.title)+'</b><div class="sub">'+esc(c.info||'')+'</div><div class="sub">'
+        +(c.registered===true?'Registered':(c.registered===false?'Not registered yet':'Registration: not set'))+(c.next?'. Next: '+esc(c.next):'')+'</div></div></li>';
+    });
+    h+='</ul>';
+  }else h+='<div class="empty">No events in the next 30 days.</div>';
+  h+='</section>';
+  h+='<section class="card"><div class="eyebrow">Coming up: my target dates (30 days)</div>';
+  if(up.length){
+    h+='<ul class="list">';
+    up.forEach(function(c){
+      h+='<li><div class="when">'+fmt(c.targetDate)+'<div class="sub">'+inDays(daysUntil(c.targetDate))+'</div></div><div><b>'+esc(c.title)+'</b><div class="sub">'+esc(ST[c.status].label)+'</div></div></li>';
+    });
+    h+='</ul>';
+  }else h+='<div class="empty">No target dates in the next 30 days.</div>';
+  h+='</section></div>';
+  return h;
+}
+
+function viewActive(){
+  var act=byStatus('active');
+  var h='<div class="sec-row"><h2 class="sec">Active courses</h2><span class="muted small">'+act.length+' of '+MAX_ACTIVE+' places used</span></div>';
+  h+='<div class="grid two">';
+  act.forEach(function(c){h+=cardHTML(c);});
+  for(var i=act.length;i<MAX_ACTIVE;i++){
+    h+='<div class="slot"><b>Free place</b><p class="small" style="margin:6px 0 12px">Choose a course from the shelf whenever you like.</p><button class="btn" data-goto="shelf">Open the shelf</button></div>';
+  }
+  h+='</div>';
+  return h;
+}
+
+function timelineSVG(){
+  var t=today(),end=new Date(2027,2,31),total=diff(end,t);
+  var W=900,padL=26,padR=26,axisY=48;
+  function xOf(d){return padL+clamp(diff(d,t)/total,0,1)*(W-padL-padR);}
+  var items=[],beyond=0;
+  S.courses.forEach(function(c){
+    if(c.status==='finished')return;
+    function add(date,kind,word){
+      if(!date)return;
+      var d=parseD(date);if(!d)return;
+      if(d>end){beyond++;return;}
+      items.push({c:c,d:d,kind:kind,word:word,n:diff(d,t)});
+    }
+    if(c.status==='event')add(c.eventDate,'event','Event');
+    else{add(c.hardDeadline,'hard','Hard deadline');add(c.targetDate,'target','Target');}
+  });
+  if(!items.length&&!beyond)return '<div class="empty">No deadlines or target dates are set yet.</div>';
+  items.sort(function(a,b){return a.d-b.d;});
+  var lanes=[],laneStep=20,laneTop=axisY+34;
+  items.forEach(function(it){
+    var title=it.c.title.length>24?it.c.title.slice(0,23)+'…':it.c.title;
+    it.label=title+' · '+it.d.getDate()+' '+MON[it.d.getMonth()];
+    var w=it.label.length*6.4+8,x=xOf(it.d),x0,x1;
+    if(x+w>W-4){it.anchor='end';x0=x-w;x1=x+4;}else{it.anchor='start';x0=x-4;x1=x+w;}
+    var l=0;
+    while(lanes[l]!==undefined&&lanes[l]>x0-6)l++;
+    lanes[l]=x1;
+    it.lane=l;it.x=x;
+  });
+  var H=laneTop+Math.max(lanes.length,1)*laneStep+8;
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:760px;display:block" role="img" aria-label="Timeline of deadlines and target dates from today to March 2027">';
+  s+='<rect x="'+padL+'" y="'+(axisY-3)+'" width="'+(W-padL-padR)+'" height="6" rx="3" fill="#eef1f5"/>';
+  // month ticks
+  var m=new Date(t.getFullYear(),t.getMonth()+1,1);
+  while(m<=end){
+    var mx=xOf(m);
+    s+='<line x1="'+mx+'" y1="'+(axisY-8)+'" x2="'+mx+'" y2="'+(axisY+8)+'" stroke="#c9d0d9"/>';
+    s+='<text x="'+mx+'" y="'+(axisY-14)+'" text-anchor="middle" font-size="11" fill="#6b7683">'+MON[m.getMonth()]+(m.getMonth()===0?' '+m.getFullYear():'')+'</text>';
+    m=new Date(m.getFullYear(),m.getMonth()+1,1);
+  }
+  // today line
+  s+='<line x1="'+padL+'" y1="10" x2="'+padL+'" y2="'+(H-4)+'" stroke="#3b6fd4" stroke-width="2" stroke-dasharray="4 3"/>';
+  s+='<text x="'+(padL+5)+'" y="18" font-size="11" font-weight="700" fill="#3b6fd4">today</text>';
+  items.forEach(function(it){
+    var col=urgencyColor(it.n),ly=laneTop+it.lane*laneStep,x=it.x;
+    s+='<g><title>'+esc(it.c.title+' - '+it.word+': '+fmt(it.d)+' ('+inDays(it.n)+')')+'</title>';
+    s+='<line x1="'+x+'" y1="'+(axisY+4)+'" x2="'+x+'" y2="'+(ly-10)+'" stroke="#d5dbe3"/>';
+    if(it.kind==='hard')s+='<polygon points="'+x+','+(axisY-8)+' '+(x+8)+','+axisY+' '+x+','+(axisY+8)+' '+(x-8)+','+axisY+'" fill="'+col+'"/>';
+    else if(it.kind==='event')s+='<rect x="'+(x-6)+'" y="'+(axisY-6)+'" width="12" height="12" rx="3" fill="#fff" stroke="'+col+'" stroke-width="3"/>';
+    else s+='<circle cx="'+x+'" cy="'+axisY+'" r="6" fill="'+col+'"/>';
+    s+='<text x="'+(it.anchor==='end'?x+2:x-2)+'" y="'+ly+'" text-anchor="'+it.anchor+'" font-size="11.5" fill="#1f2933">'+esc(it.label)+'</text></g>';
+  });
+  s+='</svg>';
+  var lg='<div class="legend"><span><span class="dot" style="background:'+C_RED+'"></span>under 14 days</span><span><span class="dot" style="background:'+C_AMBER+'"></span>under 30 days</span><span><span class="dot" style="background:'+C_GREEN+'"></span>further away</span>'
+    +'<span>● my target date</span><span>◆ hard deadline</span><span>▢ event</span></div>';
+  if(beyond)lg+='<div class="small muted" style="margin-top:6px">'+beyond+' date'+(beyond>1?'s are':' is')+' after March 2027 and not shown here.</div>';
+  return '<div class="scroll-x">'+s+'</div>'+lg;
+}
+
+function viewShelf(){
+  var shelf=byStatus('shelf').sort(function(a,b){
+    var x=a.hardDeadline||a.targetDate||'9999-99-99',y=b.hardDeadline||b.targetDate||'9999-99-99';
+    return x<y?-1:(x>y?1:0);
+  });
+  var evs=byStatus('event').sort(function(a,b){return (a.eventDate||'9999')<(b.eventDate||'9999')?-1:1;});
+  var h='<section class="card" style="margin-top:4px"><div class="eyebrow">Timeline: today to March 2027</div>'+timelineSVG()+'</section>';
+  h+='<div class="sec-row"><h2 class="sec">On the shelf</h2><button class="btn" data-act="add">+ Add course or event</button></div>';
+  h+='<p class="muted small" style="margin:-4px 0 12px">Courses on the shelf are resting, and that is completely fine. They wait for you.</p>';
+  if(shelf.length){h+='<div class="grid two">'+shelf.map(cardHTML).join('')+'</div>';}
+  else h+='<div class="empty">The shelf is empty.</div>';
+  h+='<h2 class="sec">Events</h2>';
+  if(evs.length)h+='<div class="grid two">'+evs.map(cardHTML).join('')+'</div>';
+  else h+='<div class="empty">No events yet.</div>';
+  return h;
+}
+
+function calendarSVG(){
+  var t=today(),start=addDays(mondayOf(t),-49),cell=36,gap=6,left=34,top=26;
+  var counts={},mins={};
+  S.sessions.forEach(function(s){counts[s.date]=(counts[s.date]||0)+1;mins[s.date]=(mins[s.date]||0)+(s.minutes||0);});
+  var W=left+8*(cell+gap),H=top+7*(cell+gap);
+  var s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="max-width:'+(W+40)+'px" role="img" aria-label="Study calendar for the last 8 weeks">';
+  ['Mon','Wed','Fri'].forEach(function(l,i){
+    s+='<text x="0" y="'+(top+i*2*(cell+gap)+cell/2+4)+'" font-size="11" fill="#6b7683">'+l+'</text>';
+  });
+  var fills=['#eef1f5','#bfe3d1','#7cc4a3','#2a8564'];
+  for(var w=0;w<8;w++){
+    var wd=addDays(start,w*7);
+    s+='<text x="'+(left+w*(cell+gap))+'" y="14" font-size="10.5" fill="#6b7683">'+wd.getDate()+' '+MON[wd.getMonth()]+'</text>';
+    for(var d=0;d<7;d++){
+      var day=addDays(start,w*7+d),k=iso(day),n=counts[k]||0,future=day>t;
+      var x=left+w*(cell+gap),y=top+d*(cell+gap);
+      var tip=fmt(day)+': '+(n?n+(n>1?' sessions':' session')+(mins[k]?', '+mins[k]+' min':''):(future?'':'no session'));
+      s+='<rect x="'+x+'" y="'+y+'" width="'+cell+'" height="'+cell+'" rx="7" fill="'+(future?'#fff':fills[Math.min(n,3)])+'" stroke="'+(k===iso(t)?'#1f2933':(future?'#eef1f5':'transparent'))+'" stroke-width="'+(k===iso(t)?2:1)+'"><title>'+esc(tip)+'</title></rect>';
+    }
+  }
+  s+='</svg>';
+  return s+'<div class="legend"><span>Fewer</span>'+fills.map(function(f){return '<span class="dot" style="background:'+f+';width:14px;height:14px;border-radius:4px"></span>';}).join('')+'<span>More</span><span>Dark outline = today</span></div>';
+}
+
+function viewProgress(){
+  var act=byStatus('active'),t=today();
+  var wk=sessionsBetween(mondayOf(t),t).length;
+  var known=act.map(pct).filter(function(p){return p!==null;});
+  var avg=known.length?Math.round(known.reduce(function(a,b){return a+b;},0)/known.length)+'%':'not set';
+  var certs=S.courses.filter(function(c){return c.certificate;}).length;
+  var h='<div class="grid four">';
+  h+='<div class="card stat"><div class="eyebrow">Active courses</div><div class="n">'+act.length+' of '+MAX_ACTIVE+'</div><div class="l">places in use</div></div>';
+  h+='<div class="card stat"><div class="eyebrow">Sessions this week</div><div class="n">'+wk+'</div><div class="l">since Monday</div></div>';
+  h+='<div class="card stat"><div class="eyebrow">Average progress</div><div class="n">'+avg+'</div><div class="l">'+(known.length?'of '+known.length+' active course'+(known.length>1?'s':'')+' with progress set':'active courses')+'</div></div>';
+  h+='<div class="card stat"><div class="eyebrow">Certificates</div><div class="n">'+certs+'</div><div class="l">earned</div></div>';
+  h+='</div>';
+  h+='<section class="card" style="margin-top:16px"><div class="eyebrow">Study calendar: last 8 weeks</div>'+calendarSVG()+'</section>';
+  // data
+  h+='<section class="card" style="margin-top:16px"><div class="eyebrow">Data and Claude</div><p class="small muted" style="margin:0 0 4px">Your data lives only in this browser. Copy a summary into your chat with Claude, or keep a backup file.</p>'
+    +'<div class="btns"><button class="btn primary" data-act="copy">Copy summary for Claude</button><button class="btn" data-act="export">Export data (JSON)</button><button class="btn" data-act="import">Import data (JSON)</button></div></section>';
+  // history
+  var hist=S.sessions.slice().sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:0);});
+  h+='<h2 class="sec">Session history</h2><section class="card">';
+  if(hist.length){
+    h+='<ul class="hist">';
+    hist.forEach(function(s){
+      h+='<li><div><b>'+esc(courseTitle(s))+'</b><div class="small muted">'+fmt(s.date)+(s.minutes?' · '+s.minutes+' min':'')+'</div></div><button class="btn sm" data-act="delsession" data-id="'+esc(s.id)+'" aria-label="Remove this session">Remove</button></li>';
+    });
+    h+='</ul>';
+  }else h+='<div class="empty">No sessions yet. Your first one will appear here.</div>';
+  h+='</section>';
+  var fin=byStatus('finished');
+  h+='<h2 class="sec">Finished courses and certificates</h2>';
+  if(fin.length)h+='<div class="grid two">'+fin.map(cardHTML).join('')+'</div>';
+  else h+='<div class="empty">Nothing finished yet. That is okay, every small step counts.</div>';
+  return h;
+}
+
+function render(){
+  document.getElementById('todayLabel').textContent=fmt(today());
+  var btns=document.querySelectorAll('#tabs button');
+  for(var i=0;i<btns.length;i++){
+    if(btns[i].getAttribute('data-tab')===tab)btns[i].setAttribute('aria-current','page');
+    else btns[i].removeAttribute('aria-current');
+  }
+  var v=document.getElementById('view');
+  v.innerHTML=tab==='today'?viewToday():tab==='active'?viewActive():tab==='shelf'?viewShelf():viewProgress();
+  renderBanner();
+}
+function go(t){tab=t;try{history.replaceState(null,'','#'+t);}catch(e){}render();window.scrollTo(0,0);}
+
+/* ---------- toast and modal ---------- */
+var toastTimer=null;
+function toast(msg){
+  var r=document.getElementById('toastRoot');
+  r.innerHTML='<div class="toast" role="status">'+esc(msg)+'</div>';
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){r.innerHTML='';},2600);
+}
+function openModal(html,cls){
+  var r=document.getElementById('modalRoot');
+  r.innerHTML='<div class="overlay" role="dialog" aria-modal="true"><div class="modal '+(cls||'')+'">'+html+'</div></div>';
+  var f=r.querySelector('textarea,input,select');
+  if(f)f.focus();
+  return r.firstChild;
+}
+function closeModal(){document.getElementById('modalRoot').innerHTML='';}
+function confirmModal(title,text,okLabel,onOk,danger){
+  var m=openModal('<h2>'+esc(title)+'</h2><p class="sub">'+text+'</p><div class="btns"><button class="btn" data-m="cancel">Cancel</button><button class="btn '+(danger?'danger':'primary')+'" data-m="ok">'+esc(okLabel)+'</button></div>');
+  m.querySelector('[data-m=cancel]').onclick=closeModal;
+  m.querySelector('[data-m=ok]').onclick=function(){closeModal();onOk();};
+}
+
+/* ---------- actions ---------- */
+function activate(id){
+  var c=get(id);if(!c)return;
+  var act=byStatus('active');
+  if(act.length>=MAX_ACTIVE){
+    var html='<h2>Two courses are already active</h2><p class="sub">To keep things light, only '+MAX_ACTIVE+' courses can be active at once. Which one would you like to put on the shelf so <b>'+esc(c.title)+'</b> can take its place? Nothing moves unless you choose.</p><div class="btns" style="flex-direction:column;align-items:stretch">';
+    act.forEach(function(a,i){html+='<button class="btn" data-m="swap" data-i="'+i+'">Put "'+esc(a.title)+'" on the shelf</button>';});
+    html+='<button class="btn" data-m="cancel">Keep things as they are</button></div>';
+    var m=openModal(html);
+    m.querySelector('[data-m=cancel]').onclick=closeModal;
+    var sw=m.querySelectorAll('[data-m=swap]');
+    for(var i=0;i<sw.length;i++){sw[i].onclick=(function(a){return function(){
+      a.status='shelf';c.status='active';save();closeModal();toast('"'+c.title+'" is active now. "'+a.title+'" is resting on the shelf.');render();
+    };})(act[+sw[i].getAttribute('data-i')]);}
+    return;
+  }
+  c.status='active';save();toast('Made active. Have a good start!');render();
+}
+function shelve(id){var c=get(id);if(!c)return;c.status='shelf';save();toast('Put on the shelf. It will wait for you.');render();}
+function reopen(id){var c=get(id);if(!c)return;c.status='shelf';c.finishedDate=null;save();toast('Moved back to the shelf.');render();}
+
+function finishFlow(id,preCert){
+  var c=get(id);if(!c)return;
+  var isEv=c.status==='event';
+  var body='<h2>'+(isEv?'Mark as done?':'Mark as finished?')+'</h2><p class="sub">'+esc(c.title)+'</p>';
+  if(!isEv)body+='<label class="chk"><input type="checkbox" id="f-cert"'+(preCert?' checked':'')+'> I got a certificate (adds +1 to Certificates)</label>';
+  body+='<div class="btns"><button class="btn" data-m="cancel">Not yet</button><button class="btn primary" data-m="ok">Yes, mark it</button></div>';
+  var m=openModal(body);
+  m.querySelector('[data-m=cancel]').onclick=closeModal;
+  m.querySelector('[data-m=ok]').onclick=function(){
+    var cb=m.querySelector('#f-cert');
+    c.status='finished';c.finishedDate=iso(today());
+    if(cb&&cb.checked)c.certificate=true;
+    save();closeModal();toast('Well done!');render();
+  };
+}
+function celebrate(c){
+  var conf='<div class="confetti">';
+  var cols=['#e0626a','#e2a032','#4fa77f','#3b6fd4','#7650c2'];
+  for(var i=0;i<26;i++)conf+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;background:'+cols[i%5]+';animation-delay:'+(Math.random()*2).toFixed(2)+'s"></i>';
+  conf+='</div>';
+  var m=openModal(conf+'<div class="emoji">🎉</div><h2>You reached 100%!</h2><p class="sub">Wonderful work on <b>'+esc(c.title)+'</b>. Would you like to mark it as finished and add a certificate?</p><div class="btns" style="justify-content:center"><button class="btn" data-m="no">Not yet</button><button class="btn primary" data-m="yes">Mark as finished, +1 certificate</button></div>','cel');
+  m.querySelector('[data-m=no]').onclick=function(){closeModal();render();};
+  m.querySelector('[data-m=yes]').onclick=function(){
+    c.status='finished';c.finishedDate=iso(today());c.certificate=true;
+    save();closeModal();toast('Certificate added. Congratulations!');render();
+  };
+}
+
+function logFlow(id){
+  var c=get(id);if(!c)return;
+  var unit=c.unit||'percent';
+  var val=unit==='percent'?(c.percent===null?'':c.percent):(c.done===null?'':c.done);
+  var m=openModal('<h2>Log a session</h2><p class="sub">'+esc(c.title)+'</p>'
+    +'<label>Where did you stop?<textarea id="f-stopped" rows="2">'+esc(c.stopped)+'</textarea></label>'
+    +'<label>What\'s your next small step?<textarea id="f-next" rows="2">'+esc(c.next)+'</textarea></label>'
+    +'<label>Progress now <small>(leave empty if unknown)</small><div class="inl"><select id="f-unit"><option value="percent"'+(unit==='percent'?' selected':'')+'>percent</option><option value="lessons"'+(unit==='lessons'?' selected':'')+'>lessons</option></select>'
+    +'<input id="f-val" type="number" min="0" step="any" value="'+esc(val)+'" placeholder="not set"><span id="f-of" style="white-space:nowrap">of <input id="f-total" type="number" min="1" step="1" style="width:76px;display:inline-block" value="'+esc(c.total===null?'':c.total)+'"></span></div></label>'
+    +'<label>Minutes studied <small>(optional)</small><input id="f-min" type="number" min="0" step="1" placeholder="not set"></label>'
+    +'<div class="err" id="f-err" role="alert"></div>'
+    +'<div class="btns"><button class="btn" data-m="skip">Skip</button><button class="btn primary" data-m="save">Save</button></div>');
+  var sel=m.querySelector('#f-unit'),of=m.querySelector('#f-of');
+  function sync(){of.style.display=sel.value==='lessons'?'':'none';}
+  sel.onchange=sync;sync();
+  m.querySelector('[data-m=skip]').onclick=closeModal;
+  m.querySelector('[data-m=save]').onclick=function(){
+    var err=m.querySelector('#f-err');
+    var u=sel.value,v=m.querySelector('#f-val').value.trim(),tt=m.querySelector('#f-total').value.trim(),mn=m.querySelector('#f-min').value.trim();
+    var mins=null;
+    if(mn!==''){mins=Number(mn);if(!isFinite(mins)||mins<0){err.textContent='Minutes should be a number, or leave it empty.';return;}if(mins===0)mins=null;}
+    var upd={};
+    if(v!==''){
+      var n=Number(v);
+      if(!isFinite(n)||n<0){err.textContent='Progress should be a positive number.';return;}
+      if(u==='percent'){
+        if(n>100){err.textContent='Percent cannot be more than 100.';return;}
+        upd={unit:'percent',percent:n};
+      }else{
+        var T=Number(tt);
+        if(!isFinite(T)||T<=0){err.textContent='Please enter how many lessons the course has.';return;}
+        if(n>T){err.textContent='Lessons done cannot be more than the total.';return;}
+        upd={unit:'lessons',done:n,total:T};
+      }
+    }
+    for(var k in upd)c[k]=upd[k];
+    c.stopped=m.querySelector('#f-stopped').value.trim();
+    c.next=m.querySelector('#f-next').value.trim();
+    c.lastSession=iso(today());
+    S.sessions.push({id:uid('s-'),courseId:c.id,title:c.title,date:iso(today()),minutes:mins});
+    save();closeModal();
+    var p=pct(c);
+    if(p!==null&&p>=100&&c.status!=='finished'){celebrate(c);}
+    else{toast('Session saved. Nice work!');render();}
+  };
+}
+
+function formModal(c){
+  var isNew=!c;
+  c=c||mk({id:'',title:'',status:'shelf'});
+  var kind=c.status==='event'?'event':'course';
+  function opt(v,l,cur){return '<option value="'+v+'"'+(cur===v?' selected':'')+'>'+l+'</option>';}
+  var m=openModal('<h2>'+(isNew?'Add course or event':'Edit')+'</h2>'
+    +'<label>Title<input type="text" id="e-title" value="'+esc(c.title)+'"></label>'
+    +'<label>Organization <small>(optional)</small><input type="text" id="e-org" value="'+esc(c.org)+'"></label>'
+    +'<label>Link <small>(optional, starts with https://)</small><input type="url" id="e-url" value="'+esc(c.url||'')+'"></label>'
+    +'<div class="row"><label>Type<select id="e-kind">'+opt('course','Course',kind)+opt('event','Event (webinar etc.)',kind)+'</select></label>'
+    +'<label>Priority<select id="e-pri">'+opt('','Normal',c.priority||'')+opt('important','Important',c.priority||'')+opt('low','Low priority',c.priority||'')+'</select></label></div>'
+    +'<div id="e-course">'
+    +'<label>Progress measured in<select id="e-unit">'+opt('','not set',c.unit||'')+opt('percent','percent',c.unit||'')+opt('lessons','lessons',c.unit||'')+'</select></label>'
+    +'<div class="row"><label id="e-pw">Percent<input type="number" id="e-percent" min="0" max="100" step="any" value="'+esc(c.percent===null?'':c.percent)+'"></label>'
+    +'<label id="e-dw">Lessons done<input type="number" id="e-done" min="0" step="1" value="'+esc(c.done===null?'':c.done)+'"></label>'
+    +'<label id="e-tw">Lessons in total<input type="number" id="e-total" min="1" step="1" value="'+esc(c.total===null?'':c.total)+'"></label></div>'
+    +'<label>Where I stopped<textarea id="e-stopped" rows="2">'+esc(c.stopped)+'</textarea></label>'
+    +'<div class="row"><label>Hard deadline <small>(optional)</small><input type="date" id="e-hard" value="'+esc(c.hardDeadline||'')+'"></label>'
+    +'<label>My target date <small>(optional)</small><input type="date" id="e-target" value="'+esc(c.targetDate||'')+'"></label></div></div>'
+    +'<div id="e-event"><label>Event date<input type="date" id="e-edate" value="'+esc(c.eventDate||'')+'"></label></div>'
+    +'<label>Next small step<textarea id="e-next" rows="2">'+esc(c.next)+'</textarea></label>'
+    +'<label>Details <small>(optional, e.g. 7 lessons, about 14 h)</small><input type="text" id="e-info" value="'+esc(c.info)+'"></label>'
+    +'<label>Note <small>(optional)</small><textarea id="e-note" rows="2">'+esc(c.note)+'</textarea></label>'
+    +'<div class="err" id="e-err" role="alert"></div>'
+    +'<div class="btns"><button class="btn" data-m="cancel">Cancel</button><button class="btn primary" data-m="save">Save</button></div>');
+  var kindSel=m.querySelector('#e-kind'),unitSel=m.querySelector('#e-unit');
+  function sync(){
+    var ev=kindSel.value==='event';
+    m.querySelector('#e-course').style.display=ev?'none':'';
+    m.querySelector('#e-event').style.display=ev?'':'none';
+    var u=unitSel.value;
+    m.querySelector('#e-pw').style.display=u==='percent'?'':'none';
+    m.querySelector('#e-dw').style.display=u==='lessons'?'':'none';
+    m.querySelector('#e-tw').style.display=u==='lessons'?'':'none';
+  }
+  kindSel.onchange=sync;unitSel.onchange=sync;sync();
+  m.querySelector('[data-m=cancel]').onclick=closeModal;
+  m.querySelector('[data-m=save]').onclick=function(){
+    var err=m.querySelector('#e-err');
+    function v(i){return m.querySelector(i).value.trim();}
+    function num(i){var s=v(i);if(s==='')return null;var n=Number(s);return isFinite(n)&&n>=0?n:NaN;}
+    var title=v('#e-title');
+    if(!title){err.textContent='Please give it a title.';return;}
+    var url=v('#e-url');
+    if(url&&!safeUrl(url)){err.textContent='The link should start with http:// or https://.';return;}
+    var ev=kindSel.value==='event';
+    var u=unitSel.value||null;
+    var pc=num('#e-percent'),dn=num('#e-done'),tt=num('#e-total');
+    if(!ev){
+      if(u==='percent'&&(Number.isNaN(pc)||(pc!==null&&pc>100))){err.textContent='Percent should be between 0 and 100.';return;}
+      if(u==='lessons'){
+        if(Number.isNaN(dn)||Number.isNaN(tt)){err.textContent='Lessons should be whole numbers.';return;}
+        if(dn!==null&&(!tt||dn>tt)){err.textContent='Lessons done cannot be more than the total.';return;}
+      }
+    }
+    if(ev&&!v('#e-edate')){err.textContent='Please pick the event date.';return;}
+    var o={title:title,org:v('#e-org'),url:url||null,priority:v('#e-pri')||null,next:v('#e-next'),info:v('#e-info'),note:v('#e-note')};
+    if(ev){
+      o.eventDate=v('#e-edate');o.unit=null;o.percent=null;o.done=null;o.total=null;o.hardDeadline=null;o.targetDate=null;o.stopped='';
+      if(c.status!=='event'){o.status='event';}
+      if(isNew)o.registered=null;
+    }else{
+      o.unit=u;o.percent=u==='percent'?pc:null;o.done=u==='lessons'?dn:null;o.total=u==='lessons'?tt:null;
+      o.stopped=v('#e-stopped');o.hardDeadline=v('#e-hard')||null;o.targetDate=v('#e-target')||null;o.eventDate=null;
+      if(c.status==='event')o.status='shelf';
+    }
+    if(isNew){
+      var nc=mk({id:uid('c-'),status:ev?'event':'shelf'});
+      for(var k in o)nc[k]=o[k];
+      S.courses.push(nc);toast('Added. It is on the '+(ev?'events list':'shelf')+'.');
+      if(tab==='today'||tab==='active'||tab==='progress'){tab=ev?'shelf':'shelf';}
+    }else{
+      for(var k2 in o)c[k2]=o[k2];
+      toast('Saved.');
+    }
+    save();closeModal();render();
+  };
+}
+
+function deleteFlow(id){
+  var c=get(id);if(!c)return;
+  confirmModal('Delete this?','<b>'+esc(c.title)+'</b> will be removed. Sessions you already logged stay in your history. This cannot be undone.','Delete',function(){
+    S.courses=S.courses.filter(function(x){return x.id!==id;});save();toast('Deleted.');render();
+  },true);
+}
+
+/* ---------- summary for Claude (Russian) ---------- */
+function ruDays(n){
+  var a=Math.abs(n)%100,b=a%10;
+  if(a>10&&a<20)return n+' дней';
+  if(b===1)return n+' день';
+  if(b>=2&&b<=4)return n+' дня';
+  return n+' дней';
+}
+function ruProg(c){
+  if(c.unit==='percent')return c.percent===null?'не указано':Math.round(c.percent)+'%';
+  if(c.unit==='lessons'){
+    if(c.done===null)return 'не указано'+(c.total?' (всего уроков: '+c.total+')':'');
+    return c.done+' из '+(c.total||'?')+' уроков';
+  }
+  return 'не указано';
+}
+function ruDate(s){return s?fmt(s):'не указано';}
+function ruLast(s){
+  var n=daysSince(s);
+  if(n===null)return 'не указано';
+  return fmt(s)+(n<=0?' (сегодня)':' ('+ruDays(n)+' назад)');
+}
+function ruLeft(s){
+  var n=daysUntil(s);
+  if(n===null)return '';
+  if(n<0)return ' (прошло '+ruDays(-n)+' назад)';
+  if(n===0)return ' (сегодня)';
+  return ' (осталось '+ruDays(n)+')';
+}
+function buildSummary(){
+  var t=today(),L=[];
+  L.push('Сводка Course Coach на '+fmt(t));
+  L.push('');
+  var act=byStatus('active');
+  L.push('АКТИВНЫЕ КУРСЫ ('+act.length+' из '+MAX_ACTIVE+'):');
+  if(!act.length)L.push('Нет активных курсов.');
+  act.forEach(function(c,i){
+    L.push((i+1)+'. '+c.title+(c.org?' ('+c.org+')':''));
+    L.push('   Прогресс: '+ruProg(c));
+    L.push('   Где остановилась: '+(c.stopped||'не указано'));
+    L.push('   Следующий шаг: '+(c.next||'не указано'));
+    L.push('   Жёсткий дедлайн: '+ruDate(c.hardDeadline)+(c.hardDeadline?ruLeft(c.hardDeadline):''));
+    L.push('   Моя целевая дата: '+ruDate(c.targetDate)+(c.targetDate?ruLeft(c.targetDate):''));
+    var ds=daysSince(c.lastSession);
+    L.push('   Последнее занятие: '+ruLast(c.lastSession));
+    L.push('   Дней без занятий: '+(ds===null?'не указано':ds));
+    if(c.info)L.push('   Детали: '+c.info);
+    if(c.note)L.push('   Заметка: '+c.note);
+  });
+  L.push('');
+  var w=sessionsBetween(addDays(t,-6),t).sort(function(a,b){return a.date<b.date?-1:1;});
+  L.push('ЗАНЯТИЯ ЗА ПОСЛЕДНИЕ 7 ДНЕЙ: '+w.length);
+  w.forEach(function(s){L.push('- '+fmt(s.date)+': '+courseTitle(s)+(s.minutes?', '+s.minutes+' мин':''));});
+  L.push('');
+  var shelf=byStatus('shelf');
+  L.push('КУРСЫ НА ПОЛКЕ ('+shelf.length+'):');
+  if(!shelf.length)L.push('Полка пуста.');
+  shelf.forEach(function(c,i){
+    var extra=[];
+    if(c.priority==='important')extra.push('важный');
+    if(c.priority==='low')extra.push('низкий приоритет');
+    L.push((i+1)+'. '+c.title+(c.org?' ('+c.org+')':'')+(extra.length?' ['+extra.join(', ')+']':''));
+    L.push('   Следующий шаг: '+(c.next||'не указано'));
+    L.push('   Жёсткий дедлайн: '+ruDate(c.hardDeadline)+(c.hardDeadline?ruLeft(c.hardDeadline):'')+'; моя целевая дата: '+ruDate(c.targetDate)+(c.targetDate?ruLeft(c.targetDate):''));
+    if(c.info)L.push('   Детали: '+c.info);
+  });
+  L.push('');
+  var lim=addDays(t,30);
+  var ev=byStatus('event').filter(function(c){var d=parseD(c.eventDate);return d&&d>=t&&d<=lim;}).sort(function(a,b){return a.eventDate<b.eventDate?-1:1;});
+  L.push('БЛИЖАЙШИЕ СОБЫТИЯ (30 дней):');
+  if(!ev.length)L.push('Нет событий.');
+  ev.forEach(function(c){
+    L.push('- '+c.title+', '+fmt(c.eventDate)+ruLeft(c.eventDate)+'. '+(c.registered===true?'Зарегистрирована.':(c.registered===false?'Не зарегистрирована.':'Регистрация: не указано.'))+' Следующий шаг: '+(c.next||'не указано')+(c.info?' (детали: '+c.info+')':''));
+  });
+  var fin=byStatus('finished');
+  L.push('');
+  L.push('ЗАВЕРШЕНО: '+fin.length+'; сертификатов: '+S.courses.filter(function(c){return c.certificate;}).length);
+  fin.forEach(function(c){L.push('- '+c.title+(c.finishedDate?' ('+fmt(c.finishedDate)+')':''));});
+  L.push('');
+  L.push('Помоги мне спланировать неделю. Подсказывай мягко, без давления: максимум 2 активных курса, остальные могут спокойно лежать на полке.');
+  return L.join('\n');
+}
+function copyText(t){
+  return new Promise(function(res){
+    function fallback(){
+      try{
+        var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';
+        document.body.appendChild(ta);ta.select();var ok=document.execCommand('copy');ta.remove();res(ok);
+      }catch(e){res(false);}
+    }
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(t).then(function(){res(true);},fallback);
+    }else fallback();
+  });
+}
+function copyFlow(){
+  var text=buildSummary();
+  copyText(text).then(function(ok){
+    if(ok){toast('Summary copied. Paste it into your chat with Claude.');return;}
+    var m=openModal('<h2>Copy the summary</h2><p class="sub">Your browser did not allow automatic copying. Select the text below and copy it by hand.</p><pre class="sum" id="sumtxt">'+esc(text)+'</pre><div class="btns"><button class="btn primary" data-m="close">Close</button></div>');
+    m.querySelector('[data-m=close]').onclick=closeModal;
+    var r=document.createRange();r.selectNodeContents(m.querySelector('#sumtxt'));
+    var sl=window.getSelection();sl.removeAllRanges();sl.addRange(r);
+  });
+}
+
+/* ---------- export and import ---------- */
+function exportJSON(){
+  var obj={version:1,exportedAt:iso(today()),courses:S.courses,sessions:S.sessions};
+  var blob=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  var url=URL.createObjectURL(blob);
+  a.href=url;a.download='course-coach-'+iso(today())+'.json';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},1500);
+  toast('Backup file downloaded.');
+}
+function importFlow(){
+  var m=openModal('<h2>Import data (JSON)</h2><p class="sub">Paste JSON text or choose a file. Nothing changes until you confirm on the next step.</p>'
+    +'<label>Choose a file<input type="file" id="i-file" accept=".json,application/json"></label>'
+    +'<label>Or paste JSON here<textarea id="i-text" rows="7" placeholder="{ &quot;courses&quot;: [ ... ] }"></textarea></label>'
+    +'<div class="err" id="i-err" role="alert"></div>'
+    +'<div class="btns"><button class="btn" data-m="cancel">Cancel</button><button class="btn primary" data-m="check">Check data</button></div>');
+  m.querySelector('[data-m=cancel]').onclick=closeModal;
+  m.querySelector('#i-file').onchange=function(e){
+    var f=e.target.files&&e.target.files[0];if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){m.querySelector('#i-text').value=String(rd.result);};
+    rd.readAsText(f);
+  };
+  m.querySelector('[data-m=check]').onclick=function(){
+    var err=m.querySelector('#i-err'),raw=m.querySelector('#i-text').value.trim();
+    if(!raw){err.textContent='Please paste JSON or choose a file first.';return;}
+    var data;
+    try{data=JSON.parse(raw);}catch(e){err.textContent='This is not valid JSON ('+e.message+').';return;}
+    var n=normalize(data);
+    if(!n.ok){err.innerHTML='I could not use this data. Nothing was changed:<ul>'+n.errors.slice(0,8).map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+(n.errors.length>8?'<li>and '+(n.errors.length-8)+' more</li>':'')+'</ul>';return;}
+    importPreview(n.data);
+  };
+}
+function importPreview(nd){
+  var oldMap={},newMap={};
+  S.courses.forEach(function(c){oldMap[c.id]=c;});
+  nd.courses.forEach(function(c){newMap[c.id]=c;});
+  var added=[],removed=[],changed=[];
+  nd.courses.forEach(function(c){
+    if(!oldMap[c.id])added.push(c.title);
+    else if(JSON.stringify(oldMap[c.id])!==JSON.stringify(c))changed.push(c.title);
+  });
+  S.courses.forEach(function(c){if(!newMap[c.id])removed.push(c.title);});
+  function list(name,arr){return arr.length?'<p style="margin:10px 0 2px"><b>'+name+' ('+arr.length+')</b></p><ul class="diff">'+arr.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul>':'';}
+  var certOld=S.courses.filter(function(c){return c.certificate;}).length,certNew=nd.courses.filter(function(c){return c.certificate;}).length;
+  var h='<h2>Replace your data?</h2><p class="sub">This is what will change. Your current data will be replaced.</p>'
+    +'<p style="margin:8px 0"><b>Courses and events:</b> '+S.courses.length+' now, '+nd.courses.length+' after<br><b>Sessions:</b> '+S.sessions.length+' now, '+nd.sessions.length+' after<br><b>Certificates:</b> '+certOld+' now, '+certNew+' after</p>'
+    +list('New',added)+list('Changed',changed)+list('Removed',removed);
+  if(!added.length&&!changed.length&&!removed.length&&nd.sessions.length===S.sessions.length)h+='<p class="muted">The courses look the same as what you have now.</p>';
+  h+='<p class="small muted">Tip: use "Export data (JSON)" first if you want a copy of the current data.</p>'
+    +'<div class="btns"><button class="btn" data-m="cancel">Cancel, change nothing</button><button class="btn primary" data-m="ok">Replace my data</button></div>';
+  var m=openModal(h);
+  m.querySelector('[data-m=cancel]').onclick=closeModal;
+  m.querySelector('[data-m=ok]').onclick=function(){S=nd;save();closeModal();toast('Data imported.');render();};
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('[data-tab],[data-act],[data-goto]');
+  if(!t)return;
+  if(t.hasAttribute('data-tab')){go(t.getAttribute('data-tab'));return;}
+  if(t.hasAttribute('data-goto')){go(t.getAttribute('data-goto'));return;}
+  var a=t.getAttribute('data-act'),id=t.getAttribute('data-id');
+  switch(a){
+    case 'log':logFlow(id);break;
+    case 'activate':activate(id);break;
+    case 'shelve':shelve(id);break;
+    case 'reopen':reopen(id);break;
+    case 'finish':finishFlow(id,false);break;
+    case 'edit':formModal(get(id));break;
+    case 'add':formModal(null);break;
+    case 'delete':deleteFlow(id);break;
+    case 'reg':var c=get(id);if(c){c.registered=c.registered!==true;save();render();}break;
+    case 'copy':copyFlow();break;
+    case 'export':exportJSON();break;
+    case 'import':importFlow();break;
+    case 'delsession':
+      confirmModal('Remove this session?','It will disappear from your history and calendar.','Remove',function(){
+        S.sessions=S.sessions.filter(function(s){return s.id!==id;});save();render();
+      },true);break;
+  }
+});
+document.addEventListener('change',function(e){
+  var f=e.target.getAttribute&&e.target.getAttribute('data-field');
+  if(!f)return;
+  var c=get(e.target.getAttribute('data-id'));
+  if(!c)return;
+  c[f]=e.target.value.trim();
+  save();toast('Saved.');
+});
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')closeModal();
+});
+
+var h0=(location.hash||'').replace('#','');
+if(['today','active','shelf','progress'].indexOf(h0)>=0)tab=h0;
+render();
+})();
+</script>
+</body>
+</html>
